@@ -1,76 +1,91 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="kor">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/style.css">
-    <title>당신의 정보를 입력해주세요!</title>
-    <script>
-        function checkval() {
-            if(!document.mData.name.value){
-                alert("이름 안씀!");
-                document.mData.name.focus();
-                return false;
-            }
-            else if(!document.mData.age.value){
-                alert("나이 안씀");
-                document.mData.age.focus();
-                return false;
-            }
-            else if(!document.mData.gender.value){
-                alert("성별 체크좀");
-                return false;
-            }
-            else if(!document.mData.favorite.value){
-                alert("취미 체크좀");
-                return false;
-            }
-            alert(document.mData.name.value + "님 어서오세요");
-        }
-        function myFunction(str) {
-            var name = $("#name").val();
-            const text = str.options[str.selectedIndex].text;
-            alert(name + " 님은 " + text + " 을(를) 좋아하시네요.");
-        }
-    </script>
+    <title>주간식단정보</title>
+    <link rel="stylesheet" href="./main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Playfair+Display&display=swap"
+        rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <form action="member_table.html" name="mData" onsubmit="return checkval()">
-        <table class="tableList">
-            <tr>
-                <td><div class="title">회원정보수정</div></td>
-            </tr>
-            <tr>
-                <td>이름</td>
-                <td><input type="text" size="25" id="name" name="name" placeholder="ex.홍길동"></td>
-            </tr>
-            <tr>
-                <td>나이</td>
-                <td><input type="number" size="10" id="age" name="age" min="0" max="40"></td>
-            </tr>
-            <tr>
-                <td>성별</td>
-                <td><input type="radio" id="gander_M" id= "gender" value="M" name="gender">남자 <input type="radio" id="gander_F" value="F" name="gender">여자</td>
-            </tr>
-            <tr>
-                <td>취미</td>
-                <td>
-                    <select name="favorite" id="favori"  onchange="myFunction(this)">
-                        <option value="">선택</option>
-                        <option value="1">게임</option>
-                        <option value="2">스포츠</option>
-                        <option value="3">기타</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-        <input type="submit" class="btn btn-primary sub_btn" value="저장">
-    </form>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
+    <section class="section">
+        <div class="container">
+            
+
+            <div class="section-header">
+                <h1 class="section-header-title">주간급식정보</h1>
+                <p>성일정보고</p>
+            </div>
+
+            <!-- products-row -->
+            <div class="meals-row">
+
+                <template id="tempMeal">
+                <!-- product -->
+                <div class="meal">
+                    <h4 class="meal_date">2021.08.23(월)</h4>
+                    <img class="meal-img" src="http://www.jejunews.com/news/photo/202007/2168192_190143_99.jpg" alt="meals">
+                    <div class="meal-info-wrapper">
+                        <span class="meal-info"><br/>맑은콩나물국<br/>잡채<br/>춘천닭갈비<br/>배추김치<br/>망고음료</span><br>
+                        <span class="meal-cal">886.5 Kcal</span>
+                    </div>
+                </div>
+                <!-- // product -->
+            </template>
+
+            </div>
+            <!-- // products-row -->
+        </div>
+    </section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </body>
+<script>     
+    $(document).ready(function(){
+            var  get_data = {
+                "KEY":"d1a5b81b171d42eba89b5a0fc78cc639",
+                "Type":"json",
+                "pIndex":1,
+                "pSize":100,
+                "ATPT_OFCDC_SC_CODE":"J10",
+                "SD_SCHUL_CODE":7530167,
+                "MLSV_FROM_YMD":"20210801",
+                "MLSV_TO_YMD":"20210831"
+            };
+            $.ajax({
+                url:"https://open.neis.go.kr/hub/mealServiceDietInfo",
+                type:"get",
+                data: get_data,
+                success:function(data){
+                    try{
+                        var t = JSON.parse(data);
+                        
+                        var mealList = t.mealServiceDietInfo[1].row;
+                        console.log(mealList);
+
+                        for(var i = 0; i < mealList.length; i++){
+                            var tmpMeal = $($('#tempMeal').html());
+                            tmpMeal.find('.meal_date').text(dateFormat(mealList[i].MLSV_YMD));
+                            tmpMeal.find('.meal_info').text(mealList[i].DDISH_NM);
+                            tmpMeal.find('.meal_cal').text(mealList[i].CAL_INFO);
+                            $('.meals-row').append(tmpMeal);
+                        }
+
+                    }catch(e){
+                      alert(e);
+                    }
+                },
+                error:function(){
+                    alert("접속실패");
+                }
+            });
+        });
+
+        function dateFormat(date){  
+        var dateStr = date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+        var week = ['일', '월', '화', '수', '목', '금', '토'];
+        var dayOfWeek = week[new Date(dateStr).getDay()];
+        return dateStr + '(' + dayOfWeek + ')';
+    }
+
+</script>
 </html>
